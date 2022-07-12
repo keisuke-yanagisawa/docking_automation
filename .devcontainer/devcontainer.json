@@ -1,0 +1,5 @@
+{
+    "runArgs": ["--gpus", "all", "--shm-size", "8gb"],
+    "name": "docking_automation",
+    "dockerFile": "Dockerfile",
+}
