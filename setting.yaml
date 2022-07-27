@@ -1,0 +1,5 @@
+binding_site_prediction:
+protein_prepration:
+ligand_preparation:
+docking:
+  exhaustiveness: 1

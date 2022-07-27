@@ -52,13 +52,13 @@ ENV PATH $PATH:$ADVINA_ROOT/example/autodock_scripts
 # ====== installation of Gypsum-DL ======
 ENV GYPSUMDL_ROOT /gypsum_dl
 RUN mamba install mpi4py
-RUN git clone https://git.durrantlab.pitt.edu/jdurrant/gypsum_dl.git \
+RUN git clone https://git.durrantlab.pitt.edu/jdurrant/gypsum_dl.git $GYPSUMDL_ROOT \
     && cd $GYPSUMDL_ROOT \
     && git checkout 1.2.0 
 
 # ====== installation of di
 ENV DIMORPHITEDL_ROOT /dimorphite_dl
-RUN git clone https://git.durrantlab.pitt.edu/jdurrant/dimorphite_dl.git \
+RUN git clone https://git.durrantlab.pitt.edu/jdurrant/dimorphite_dl.git $DIMORPHITEDL_ROOT \
     && cd $DIMORPHITEDL_ROOT \
     && git checkout 1.2.4
 
