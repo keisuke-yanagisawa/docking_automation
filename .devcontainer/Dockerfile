@@ -35,6 +35,11 @@ RUN cd /tmp \
     && cd ADFRsuite_x86_64Linux_1.0 \
     && ./install.sh -d $ADFR_ROOT
 ENV PATH $PATH:$ADFR_ROOT/bin
+# now we can use below commands:
+#   prepare_ligand
+#   prepare_receptor
+#   autogrid4
+#   autosite
 
 # AutoDock Vina and its python bindings
 ENV ADVINA_ROOT /AutoDock-Vina
@@ -48,6 +53,10 @@ RUN cd $ADVINA_ROOT/build/python \
     && python setup.py build install
 ENV PATH $PATH:$ADVINA_ROOT/build/linux/release
 ENV PATH $PATH:$ADVINA_ROOT/example/autodock_scripts
+# now we can use below command:
+#   vina
+# and, we can import Vina on Python as
+# "from vina import Vina"
 
 # ====== installation of Gypsum-DL ======
 ENV GYPSUMDL_ROOT /gypsum_dl
@@ -56,7 +65,7 @@ RUN git clone https://git.durrantlab.pitt.edu/jdurrant/gypsum_dl.git $GYPSUMDL_R
     && cd $GYPSUMDL_ROOT \
     && git checkout 1.2.0 
 
-# ====== installation of di
+# ====== installation of dimorphite_dl ======
 ENV DIMORPHITEDL_ROOT /dimorphite_dl
 RUN git clone https://git.durrantlab.pitt.edu/jdurrant/dimorphite_dl.git $DIMORPHITEDL_ROOT \
     && cd $DIMORPHITEDL_ROOT \
