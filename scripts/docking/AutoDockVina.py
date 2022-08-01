@@ -121,11 +121,14 @@ class AutoDockVina(DockingBase):
     AutoDock Vinaの計算結果を任意の形式に変換して出力する。
     AutoDock Vinaの標準的な入出力はpdbqtファイルだが、
     あまり一般的なフォーマットではないので、異なる形式に変更することを前提としている。
-    # TODO: exec_docking()以外にドッキングツールに依存する場所があるべきではない。
-            あるいは、ドッキングツールはすべて同一のインタフェースを持つclassで書き起こされるべき。
-            （こちらのほうが適切に思われる）
+    また、出力された構造には docking_score プロパティが付与されている。
     """
 
     tmppath = ".tmp.pdbqt"
     self.v.write_poses(tmppath, overwrite=True, n_poses=100)
-    return list(pybel.readfile("pdbqt", tmppath))
+    scores = [lst[0] for lst in self.v.energies()]
+    mols = list(pybel.readfile("pdbqt", tmppath))
+    for mol, score in zip(mols, scores):
+      mol.data["docking_score"] = score
+    os.remove(tmppath)
+    return mols

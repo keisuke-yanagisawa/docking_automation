@@ -3,6 +3,8 @@
     "name": "docking_automation",
     "dockerFile": "Dockerfile",
     "extensions": [
-        "github.copilot"
+        "github.copilot",
+        "ms-python.python",
+        "ms-toolsai.jupyter"
     ]
 }

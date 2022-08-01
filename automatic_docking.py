@@ -106,7 +106,7 @@ if __name__ == "__main__":
 
   #TODO: 水分子の除去
   #TODO: kalasantyで複数のポケットを出力する方法
-  sites   = predict_binding_site(args.protein)
+  sites = predict_binding_site(args.protein)
   adv.prepare_receptor(args.protein)
   adv.prepare_ligands(args.ligand)
   adv.prepare_docking(sites)

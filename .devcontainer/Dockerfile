@@ -71,4 +71,7 @@ RUN git clone https://git.durrantlab.pitt.edu/jdurrant/dimorphite_dl.git $DIMORP
     && cd $DIMORPHITEDL_ROOT \
     && git checkout 1.2.4
 
+# ====== for Jupyter extension =======
+RUN pip install ipykernel
+
 RUN echo "alias ls='ls --color=auto'" >> /etc/bash.bashrc
