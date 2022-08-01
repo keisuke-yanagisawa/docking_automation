@@ -1,5 +1,8 @@
 {
-    "runArgs": ["--gpus", "all", "--shm-size", "8gb"],
+    "runArgs": [],
     "name": "docking_automation",
     "dockerFile": "Dockerfile",
+    "extensions": [
+        "github.copilot"
+    ]
 }
