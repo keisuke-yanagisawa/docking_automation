@@ -4,7 +4,7 @@ from logging import DEBUG, ERROR, WARN, INFO, CRITICAL
 
 __DEFAULT_LOG_LEVEL__ = WARN
 
-class Logger:
+class __Logger:
     def __init__(self, path=""):
         self.logger = getLogger()
         self.logger.setLevel(__DEFAULT_LOG_LEVEL__)
@@ -62,4 +62,4 @@ class Logger:
             self.warn(f"level '{level}' is invalid.")
             self.warn(f"logger level has not been changed.")
 
-logger = Logger()
+logger = __Logger()
