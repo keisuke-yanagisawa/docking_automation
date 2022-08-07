@@ -6,7 +6,8 @@
         "github.copilot",
         "ms-python.python",
         "ms-toolsai.jupyter",
-        "mhutchie.git-graph"
+        "mhutchie.git-graph",
+        "shd101wyy.markdown-preview-enhanced"
     ],
     "mounts": [
         "source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/root/.ssh,type=bind",
