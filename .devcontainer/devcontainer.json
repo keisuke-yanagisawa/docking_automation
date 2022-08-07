@@ -5,6 +5,7 @@
     "extensions": [
         "github.copilot",
         "ms-python.python",
+        "ms-python.vscode-pylance",
         "ms-toolsai.jupyter",
         "mhutchie.git-graph",
         "shd101wyy.markdown-preview-enhanced"
@@ -12,5 +13,9 @@
     "mounts": [
         "source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/root/.ssh,type=bind",
         "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig,target=/root/.gitconfig,type=bind"
-    ]
+    ],
+    "settings": {
+        "python.analysis.typeCheckingMode": "basic",
+        "python.pythonPath": "/opt/conda/bin/python"
+    }
 }
