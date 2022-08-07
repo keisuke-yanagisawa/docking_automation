@@ -6,7 +6,7 @@ from typing import List
 from scripts.utilities import util
 from scripts.utilities.util import dump_enter_exit_on_debug_log
 from scripts.utilities.logger import logger
-from scripts.executables import autodock
+from scripts.executables import gypsum_dl
 from scripts import docking
 from scripts.docking import DockingRegion
 
@@ -74,6 +74,11 @@ def predict_binding_site(proteinfile: str, margin: float=5) -> List[DockingRegio
 
   return binding_sites
 
+def enumerate_tautomers(smi: str) -> List[str]:
+  gdl = gypsum_dl.GypsumDL()
+  gdl.set_input(smi)
+  return gdl.run()
+
 @dump_enter_exit_on_debug_log
 def output_poses(mols: List[pybel.Molecule], outputfile: str) -> None:
   """
@@ -90,7 +95,8 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser(
       description="Perform protein-ligand docking automatically")
   parser.add_argument("-p,--protein", dest="protein", required=True)
-  parser.add_argument("-l,--ligand", dest="ligand", required=True)
+  parser.add_argument("-l,--ligand-smi", dest="ligand_smi", 
+                      help="a ligand in SMILES file", required=True)
   parser.add_argument("-o,--output", dest="output", required=True)
   parser.add_argument("-v,--verbose", dest="verbose", action="store_true")
   parser.add_argument("--debug", action="store_true")
@@ -108,10 +114,18 @@ if __name__ == "__main__":
   #TODO: kalasantyで複数のポケットを出力する方法
   sites = predict_binding_site(args.protein)
   adv.prepare_receptor(args.protein)
-  adv.prepare_ligands(args.ligand)
-  adv.prepare_docking(sites)
-  adv.dock()
-  mols = adv.get_results()
+
+  smi = open(args.ligand_smi).read().strip()
+  ligand_smis = enumerate_tautomers(smi)
+
+  mols = []
+  for ligand_smi in ligand_smis:
+    tmppath = "/tmp/.ligand.smi"
+    open(tmppath, "w").write(ligand_smi)
+    adv.prepare_ligands(tmppath)
+    adv.prepare_docking(sites)
+    adv.dock()
+    mols.extend(adv.get_results())
   output_poses(mols, args.output)
 
   

@@ -4,6 +4,8 @@ from typing import List
 import rdkit
 from rdkit import Chem
 from rdkit.Chem import AllChem
+from vina import Vina
+
 try:
   from openbabel import pybel # openbabel 3.0.0
 except ImportError:
@@ -11,6 +13,7 @@ except ImportError:
 
 from .DockingBase import DockingBase, DockingRegion
 from ..utilities.util import dump_enter_exit_on_debug_log
+from ..utilities.logger import logger
 from ..executables import autodock
 
 
@@ -43,7 +46,8 @@ class AutoDockVina(DockingBase):
   def prepare_ligands(self, ligandfile):
     """
     ドッキング計算前の化合物処理
-    #TODO: ドッキングツールによって事前処理は異なるはず。
+    pybel側で3次元構造を起こそうとしたところ、乱数の制御が不可能で
+    毎回結果が異なってしまうため、一旦RDKitを経由させるようにしている
     """
     tmpfile=".tmp.mol2"
     smiles = open(ligandfile).read().strip()
@@ -55,9 +59,10 @@ class AutoDockVina(DockingBase):
 
     # TODO 非芳香環はflexibility考えて複数構造生成した方がいいかも
 
-    # dimorphite-DL と gypsum-DL を入れてあげる必要あり。最初は無視するけど。
+    # gypsum DL の中に dimorphite DLも含まれている
     # https://git.durrantlab.pitt.edu/jdurrant/gypsum_dl/-/tree/1.2.0
-    # https://git.durrantlab.pitt.edu/jdurrant/dimorphite_dl/-/tree/1.2.4
+    # ただし、gypsum DLは構造生成のタイミングで乱数が固定できないため
+    # 少しだけ書き換える必要がある。MyMol.pyに修正が必要。
 
     prep = autodock.PrepareLigand()
     prep.set_ligand(tmpfile)
@@ -66,11 +71,6 @@ class AutoDockVina(DockingBase):
 
   @dump_enter_exit_on_debug_log
   def prepare_receptor(self, proteinfile):
-    """
-    ドッキング計算前のタンパク質処理
-    #TODO: ドッキングツールによって事前処理は異なるはず。
-          ドッキングツールに応じたクラスのメソッドにしたほうがよいか。
-    """
     prep = autodock.PrepareReceptor()
     prep.set_receptor(proteinfile)
     self.receptorfile = prep.run()
@@ -103,7 +103,6 @@ class AutoDockVina(DockingBase):
         logger.warning("multiple ligands are not supported yet. use the first one.")
       ligandfile = self.ligandfiles[0]
 
-    from vina import Vina
     self.v = Vina(seed=42)
     self.v.set_receptor(self.receptorfile)
     self.v.set_ligand_from_file(ligandfile)
@@ -129,6 +128,9 @@ class AutoDockVina(DockingBase):
     scores = [lst[0] for lst in self.v.energies()]
     mols = list(pybel.readfile("pdbqt", tmppath))
     for mol, score in zip(mols, scores):
+      # TODO: なぜか末端の方のドッキングポーズにはdocking_scoreが付与されていない
+      #       flushが必要だったりする？
       mol.data["docking_score"] = score
+      # TODO: mol.dataにsmilesを追加する
     os.remove(tmppath)
     return mols
