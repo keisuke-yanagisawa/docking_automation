@@ -50,6 +50,10 @@ class AutoDockVina(DockingBase):
     ドッキング計算前の化合物処理
     pybel側で3次元構造を起こそうとしたところ、乱数の制御が不可能で
     毎回結果が異なってしまうため、一旦RDKitを経由させるようにしている
+
+    TODO: 
+      AutoDock Vinaは非芳香環の構造変化を計算してくれないので、
+      EmbedMultipleConfsなどを使って処理する必要がある
     """
     tmpfile=".tmp.mol2"
     smiles = open(ligandfile).read().strip()
