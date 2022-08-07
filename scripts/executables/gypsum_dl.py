@@ -2,6 +2,7 @@ import os
 import tempfile
 from typing import List
 from rdkit import Chem
+from scripts.utilities.logger import logger
 
 class GypsumDL():
   """
@@ -43,6 +44,6 @@ class GypsumDL():
 
     smis = [f"{Chem.MolToSmiles(mol)} {self.ligand_name}" for mol in mols 
             if mol != None and Chem.MolToSmiles(mol) != ""]
-    print(smis)
+    logger.debug(print(smis))
     smis = list(set(smis)) # remove duplicates
     return smis
