@@ -127,3 +127,13 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+
+
+# =========== user specific stuff ===========
+*sdf 
+*pdbqt
+**tmp**
+**test**
+**/_**
