@@ -65,13 +65,28 @@ RUN git clone https://git.durrantlab.pitt.edu/jdurrant/gypsum_dl.git $GYPSUMDL_R
     && cd $GYPSUMDL_ROOT \
     && git checkout 1.2.0 
 
-# ====== installation of dimorphite_dl ======
-ENV DIMORPHITEDL_ROOT /dimorphite_dl
-RUN git clone https://git.durrantlab.pitt.edu/jdurrant/dimorphite_dl.git $DIMORPHITEDL_ROOT \
-    && cd $DIMORPHITEDL_ROOT \
-    && git checkout 1.2.4
+# ====== To obtain deterministic results ======
+RUN sed -i "s/params.enforcechiral = True/params.randomSeed = random_seed+1\n            params.enforcechiral = True/" $GYPSUMDL_ROOT/gypsum_dl/MyMol.py
+RUN sed -i "s/new_conf = MyConformer(self, None, False, True)/new_conf = MyConformer(self, self.conformers[0].conformer(), False, True, len(self.conformers))/" $GYPSUMDL_ROOT/gypsum_dl/MyMol.py
+RUN sed -i "s/new_conf = MyConformer(self)/new_conf = MyConformer(self, random_seed = len(self.conformers))/" $GYPSUMDL_ROOT/gypsum_dl/MyMol.py
+RUN sed -i "s/self, mol, conformer=None, second_embed=False, use_random_coordinates=False/self, mol, conformer=None, second_embed=False, use_random_coordinates=False, random_seed=-1/" $GYPSUMDL_ROOT/gypsum_dl/MyMol.py
+RUN sed -i "s/random.shuffle(lst)/random.seed(42)\n    random.shuffle(lst)/" $GYPSUMDL_ROOT/gypsum_dl/Utils.py
+RUN sed -i "s/new_mols_list = \[mol_lst\[d\[1\]\] for d in data\]/new_mols_list = \[mols_3d\[d\[1\]\] for d in data\]/" $GYPSUMDL_ROOT/gypsum_dl/ChemUtils.py
+RUN sed -i "s/return lst/return sorted(lst)/" $GYPSUMDL_ROOT/gypsum_dl/Utils.py
+# TODO: 
+#   Deterministic enumeration of cis-trans isomerization
+#   Actually the non-deterministic output is because of gypsum_dl's unexpected behavior: 
+#     3D structures won't differ between cis and trans. 
+#   gypsum_dl/Steps/SMILES/EnumerateDoubleBonds.py is the code 
+
 
 # ====== for Jupyter extension =======
 RUN pip install ipykernel
 
+# ====== settings for Ubuntu =======
 RUN echo "alias ls='ls --color=auto'" >> /etc/bash.bashrc
+
+# ====== settings for git / ssh =======
+# change permission to read ssh settings if exists
+RUN chown root:$USER /root/.ssh/config || true
+RUN chmod 600        /root/.ssh/config || true
