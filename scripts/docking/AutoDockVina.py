@@ -4,7 +4,9 @@ from typing import List
 import rdkit
 from rdkit import Chem
 from rdkit.Chem import AllChem
+from ..rdkit.Chem import MolFromSmilesWithName
 from vina import Vina
+import numpy as np
 
 try:
   from openbabel import pybel # openbabel 3.0.0
@@ -23,7 +25,7 @@ def rdmol2obmol(rdmol: rdkit.Chem.rdchem.Mol) -> pybel.Molecule:
   RDKitのMoleculeオブジェクトをOpenBabelのMoleculeオブジェクトに変換する
   """
   tmpfile=".tmp.sdf"
-  print(Chem.MolToMolBlock(rdmol), file=open(tmpfile, "w"))
+  open(tmpfile, "w").write(Chem.MolToMolBlock(rdmol))
   mol = next(pybel.readfile("sdf", tmpfile))
   os.remove(tmpfile)
   return mol
@@ -51,7 +53,7 @@ class AutoDockVina(DockingBase):
     """
     tmpfile=".tmp.mol2"
     smiles = open(ligandfile).read().strip()
-    rdmol = Chem.MolFromSmiles(smiles)
+    rdmol = MolFromSmilesWithName(smiles)
     rdmol = Chem.AddHs(rdmol)
     AllChem.EmbedMolecule(rdmol, randomSeed=42)
     obmol = rdmol2obmol(rdmol)
@@ -115,7 +117,7 @@ class AutoDockVina(DockingBase):
       self.v.optimize()
 
   @dump_enter_exit_on_debug_log
-  def get_results(self, type: str="pybel"):
+  def get_results(self, type: str="pybel") -> List[pybel.Molecule]:
     """
     AutoDock Vinaの計算結果を任意の形式に変換して出力する。
     AutoDock Vinaの標準的な入出力はpdbqtファイルだが、
@@ -124,12 +126,10 @@ class AutoDockVina(DockingBase):
     """
 
     tmppath = ".tmp.pdbqt"
-    self.v.write_poses(tmppath, overwrite=True, n_poses=100)
-    scores = [lst[0] for lst in self.v.energies()]
+    self.v.write_poses(tmppath, overwrite=True, n_poses=self.parameters["n_poses"], energy_range=np.inf)
+    scores = [lst[0] for lst in self.v.energies(n_poses=self.parameters["n_poses"], energy_range=np.inf)]
     mols = list(pybel.readfile("pdbqt", tmppath))
     for mol, score in zip(mols, scores):
-      # TODO: なぜか末端の方のドッキングポーズにはdocking_scoreが付与されていない
-      #       flushが必要だったりする？
       mol.data["docking_score"] = score
       # TODO: mol.dataにsmilesを追加する
     os.remove(tmppath)

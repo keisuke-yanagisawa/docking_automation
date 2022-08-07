@@ -19,8 +19,15 @@ class GypsumDL():
     self.verbose = verbose
     self.exe     = path_to_exe
 
-  def set_input(self, input_smiles):
-    self.input_smiles = input_smiles
+  def set_smiles(self, smi: str) -> None:
+    if len(smi.split("\n")) > 1:
+      raise ImplementationError("single smiles is only acceptable")
+
+    self.input_smiles = smi
+    if len(smi.split()) > 1:
+      self.ligand_name = smi.split()[1]
+    else:
+      self.ligand_name = ""
 
   def run(self) -> List[str]:
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -34,7 +41,8 @@ class GypsumDL():
       # first mol is output information, not a virtual molecule
       mols = Chem.SDMolSupplier(f"{tmpdir}/gypsum_dl_success.sdf")
 
-    smis = [Chem.MolToSmiles(mol) for mol in mols 
+    smis = [f"{Chem.MolToSmiles(mol)} {self.ligand_name}" for mol in mols 
             if mol != None and Chem.MolToSmiles(mol) != ""]
+    print(smis)
     smis = list(set(smis)) # remove duplicates
     return smis

@@ -14,6 +14,8 @@ from kalasanty.net import UNet
 from tfbio.data import Featurizer
 import pybel
 from gridData import Grid
+import numpy as np
+
 
 from rdkit import Chem
 from rdkit.Chem import AllChem
@@ -46,7 +48,6 @@ def predict_binding_site(proteinfile: str, margin: float=5) -> List[DockingRegio
   density, origin, step = model.pocket_density_from_mol(mol_protein)
   # print(density)
   pocket_indices = model.get_pockets_segmentation(density)
-  import numpy as np
 
   candidate_indices = set(list(pocket_indices.reshape(-1)))
   candidate_indices.remove(0)
@@ -75,8 +76,9 @@ def predict_binding_site(proteinfile: str, margin: float=5) -> List[DockingRegio
   return binding_sites
 
 def enumerate_tautomers(smi: str) -> List[str]:
+  print(smi)
   gdl = gypsum_dl.GypsumDL()
-  gdl.set_input(smi)
+  gdl.set_smiles(smi)
   return gdl.run()
 
 @dump_enter_exit_on_debug_log
@@ -115,17 +117,24 @@ if __name__ == "__main__":
   sites = predict_binding_site(args.protein)
   adv.prepare_receptor(args.protein)
 
-  smi = open(args.ligand_smi).read().strip()
-  ligand_smis = enumerate_tautomers(smi)
-
   mols = []
-  for ligand_smi in ligand_smis:
-    tmppath = "/tmp/.ligand.smi"
-    open(tmppath, "w").write(ligand_smi)
-    adv.prepare_ligands(tmppath)
-    adv.prepare_docking(sites)
-    adv.dock()
-    mols.extend(adv.get_results())
+  with open(args.ligand_smi) as f:
+    for smi in f:
+      ligand_smis = enumerate_tautomers(smi)
+
+      for ligand_smi in ligand_smis:
+        lig_name = ligand_smi.split()[1] if len(ligand_smi.split()) > 1 else ""
+        tmppath = "/tmp/.ligand.smi"
+        open(tmppath, "w").write(ligand_smi)
+        adv.prepare_ligands(tmppath)
+        adv.prepare_docking(sites)
+        adv.dock()
+        tmp_mols = adv.get_results()
+        for i in range(len(tmp_mols)):
+          tmp_mols[i].title = lig_name
+          tmp_mols[i].data["name"] = lig_name
+        mols.extend(tmp_mols)
+  
   output_poses(mols, args.output)
 
   
