@@ -76,7 +76,6 @@ def predict_binding_site(proteinfile: str, margin: float=5) -> List[DockingRegio
   return binding_sites
 
 def enumerate_tautomers(smi: str) -> List[str]:
-  print(smi)
   gdl = gypsum_dl.GypsumDL()
   gdl.set_smiles(smi)
   return gdl.run()
@@ -134,7 +133,7 @@ if __name__ == "__main__":
           tmp_mols[i].title = lig_name
           tmp_mols[i].data["name"] = lig_name
         mols.extend(tmp_mols)
-  
+  mols = sorted(mols, key=lambda mol: float(mol.data["docking_score"]))
   output_poses(mols, args.output)
 
   
